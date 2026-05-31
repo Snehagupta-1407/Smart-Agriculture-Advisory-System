@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Agriculture Advisory System</title>
@@ -8,65 +16,229 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
+
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <h1>🌱 Smart Crop Recommendation System</h1>
+    <div class="dashboard">
 
-        <form id="predictionForm">
+        <!-- LEFT PANEL -->
 
-            <label for="N">Nitrogen (N)</label>
-            <input type="text" id="N" name="N" placeholder="Enter Nitrogen value" required>
+        <div class="left-panel">
 
-            <label for="P">Phosphorus (P)</label>
-            <input type="text" id="P" name="P" placeholder="Enter Phosphorus value" required>
+            <h1>🌱 Smart Crop Recommendation System</h1>
 
-            <label for="K">Potassium (K)</label>
-            <input type="text" id="K" name="K" placeholder="Enter Potassium value" required>
+            <form id="cropForm">
 
-            <label for="temperature">Temperature (°C)</label>
-            <input type="text" id="temperature" name="temperature" placeholder="Enter temperature" required>
+                <label>City Name</label>
+                <input type="text" id="city" placeholder="Enter city name">
 
-            <label for="humidity">Humidity (%)</label>
-            <input type="text" id="humidity" name="humidity" placeholder="Enter humidity" required>
+                <button type="button"
+                  class="weather-btn"
+                   onclick="getWeather()">
+                    Auto Fill Weather
+                </button>
 
-            <label for="ph">pH Value</label>
-            <input type="text" id="ph" name="ph" placeholder="Enter soil pH" required>
+                <label>Nitrogen (N)</label>
+                <input type="text" id="N" name="N" placeholder="Enter Nitrogen value">
 
-            <label for="rainfall">Rainfall (mm)</label>
-            <input type="text" id="rainfall" name="rainfall" placeholder="Enter rainfall" required>
+                <label>Phosphorus (P)</label>
+                <input type="text" id="P" name="P" placeholder="Enter Phosphorus value">
+                
+                <label>Potassium (K)</label>
+                <input type="text" id="K" name="K" placeholder="Enter Potassium value">
 
-            <button type="button" onclick="submitForm()">
-                Predict Crop
-            </button>
+                <label>Soil Type</label>
 
-        </form>
+                     <select id="soil" name="soil">
 
-        <!-- Result Section -->
-        <div class="result" id="resultBox" style="display:none;">
+                    <option>Select Soil Type</option>
 
-            <h2 id="cropResult"></h2>
+                    <option>Black Soil</option>
+                    <option>Red Soil</option>
+                    <option>Clay Soil</option>
+                    <option>Alluvial Soil</option>
+                    <option>Sandy Soil</option>
 
-            <h3 id="fertilizerResult"></h3>
+                </select>
+
+                <label>Temperature (°C)</label>
+                <input type="text" id="temperature" name="temperature" placeholder="Enter temperature">
+
+                <label>Humidity (%)</label>
+                 <input type="text" id="humidity" name="humidity" placeholder="Enter humidity">
+                
+                 <label>pH Value</label>
+                 <input type="text" id="ph" name="ph" placeholder="Enter soil pH">
+
+                <label>Rainfall (mm)</label>
+                <input type="text" id="rainfall" name="rainfall" placeholder="Enter rainfall">
+                <button
+    type="button"
+    id="predictBtn"
+    class="predict-btn"
+    onclick="submitForm()">
+                    Predict Crop
+                </button>
+
+                <button type="reset" class="reset-btn">
+                    Reset
+                </button>
+
+            </form>
+
+            <!-- RESULT -->
+
+            <div class="result" id="resultBox" style="display:none;">
+
+                <h2 id="cropResult"></h2>
+
+                <h3 id="fertilizerResult"></h3>
+
+                <h3 id="seasonResult"></h3>
+
+                <h3 id="irrigationResult"></h3>
+
+                <h3 id="soilHealthResult"></h3>
+
+                <img id="cropImage" src="" alt="Crop Image">
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL -->
+
+        <div class="right-panel">
+
+            <div class="chatbot-container">
+
+                <h2>🤖 AI Farming Assistant</h2>
+
+                <div id="chatBox"></div>
+
+                <div class="chat-input-area">
+
+                    <input
+                        type="text"
+                        id="chatInput"
+                        placeholder="Ask any agriculture question..."
+                    >
+
+                    <button onclick="sendMessage()">
+                        Send
+                    </button>
+
+                </div>
+
+            </div>
 
         </div>
 
     </div>
 
+</div>
+
+
+
 <script>
+
+function getWeather() {
+
+    const city = document.getElementById("city").value;
+
+    fetch(`/weather?city=${city}`)
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        if(data.error){
+
+            alert(data.error);
+
+        } else {
+
+            document.getElementById("temperature").value =
+                data.temperature;
+
+            document.getElementById("humidity").value =
+                data.humidity;
+        }
+
+    })
+
+    .catch(error => {
+
+        alert("Error fetching weather");
+
+    });
+}
 
 function submitForm() {
 
-    const form = document.getElementById('predictionForm');
+    const form = document.getElementById('cropForm');
 
     const formData = new FormData(form);
 
     const data = {};
+    const fields = [
+    "N",
+    "P",
+    "K",
+    "temperature",
+    "humidity",
+    "ph",
+    "rainfall"
+];
+
+for (let field of fields) {
+
+    const value =
+        parseFloat(document.getElementById(field).value);
+
+    if (isNaN(value)) {
+
+        alert("Please fill all fields correctly");
+
+        return;
+    }
+
+    if (value < 0) {
+
+        alert(field + " cannot be negative");
+
+        return;
+    }
+}
+
+const humidity =
+    parseFloat(document.getElementById("humidity").value);
+
+if (humidity > 100) {
+
+    alert("Humidity cannot exceed 100%");
+
+    return;
+}
 
     formData.forEach((value, key) => {
-        data[key] = parseFloat(value);
+        if(key === "soil"){
+
+    data[key] = value;
+
+} else {
+
+    data[key] = parseFloat(value);
+}
     });
+
+    const predictBtn =
+    document.getElementById("predictBtn");
+
+    predictBtn.innerText = "Predicting...";
+    predictBtn.disabled = true;
 
     fetch('/predict', {
 
@@ -84,27 +256,50 @@ function submitForm() {
 
     .then(data => {
 
-        const resultBox = document.getElementById('resultBox');
+    console.log(data);
 
-        resultBox.style.display = "block";
+    predictBtn.innerText = "Predict Crop";
 
-        if (data.error) {
+    predictBtn.disabled = false;
 
-            document.getElementById('cropResult').innerText =
-                "Error: " + data.error;
+    const resultBox =
+        document.getElementById('resultBox');
 
-            document.getElementById('fertilizerResult').innerText = "";
+    resultBox.style.display = "block";
 
-        } else {
+    if (data.error) {
 
-            document.getElementById('cropResult').innerText =
-                "🌾 Recommended Crop: " + data.crop;
+        document.getElementById('cropResult').innerText =
+            "Error: " + data.error;
 
-            document.getElementById('fertilizerResult').innerText =
-                "🧪 Recommended Fertilizer: " + data.fertilizer;
-        }
+    } else {
 
-    })
+        document.getElementById('cropResult').innerText =
+            "🌾 Recommended Crop: " + data.crop;
+
+        document.getElementById('fertilizerResult').innerText =
+            "🧪 Recommended Fertilizer: " + data.fertilizer;
+
+        document.getElementById('seasonResult').innerText =
+            "🌤️ Best Season: " + data.season;
+
+        document.getElementById('irrigationResult').innerText =
+            "💧 Recommended Irrigation: " + data.irrigation;
+
+        document.getElementById('soilHealthResult').innerText =
+            "🌿 Soil Health: " + data.soil_health;
+
+        const cropImage =
+            document.getElementById("cropImage");
+
+        cropImage.src =
+            "/static/images/" +
+            data.crop.toLowerCase() +
+            ".jpg";
+
+        cropImage.style.display = "block";
+    }
+})
 
     .catch(error => {
 
@@ -115,8 +310,53 @@ function submitForm() {
 
     });
 }
+function sendMessage(){
 
+    const userMessage =
+        document.getElementById('chatInput').value;
+
+    if(userMessage.trim() === "") return;
+
+    const chatBox =
+        document.getElementById('chatBox');
+
+    chatBox.innerHTML += `
+        <div class="chat-message user-message">
+            <b>You:</b> ${userMessage}
+        </div>
+    `;
+
+    fetch('/chat', {
+
+        method:'POST',
+
+        headers:{
+            'Content-Type':'application/json'
+        },
+
+        body:JSON.stringify({
+            message:userMessage
+        })
+    })
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        chatBox.innerHTML += `
+            <div class="chat-message bot-message">
+                <b>AI:</b> ${data.reply}
+            </div>
+        `;
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        document.getElementById('chatInput').value = "";
+    })
+}
 </script>
+
+ 
 
 </body>
 </html>
