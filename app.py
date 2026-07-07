@@ -1,3 +1,5 @@
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
 import os
 from dotenv import load_dotenv
 import requests
@@ -12,7 +14,66 @@ print(API_KEY)
 app = Flask(__name__)
 
 # Load trained ML model
-model = joblib.load('smart-agriculture.joblib')
+model = joblib.load('crop_model.joblib')
+disease_model = load_model('plant_disease_model.h5')
+class_names = [
+
+    'Apple___Apple_scab',
+    'Apple___Black_rot',
+    'Apple___Cedar_apple_rust',
+    'Apple___healthy',
+
+    'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot',
+    'Corn_(maize)___Common_rust_',
+    'Corn_(maize)___healthy',
+
+    'Potato___Early_blight',
+    'Potato___Late_blight',
+    'Potato___healthy',
+
+    'Tomato___Bacterial_spot',
+    'Tomato___Early_blight',
+    'Tomato___Late_blight',
+    'Tomato___Leaf_Mold',
+    'Tomato___Septoria_leaf_spot',
+    'Tomato___healthy'
+]
+
+disease_solutions = {
+
+    "Potato___Early_blight":
+    "Apply Mancozeb fungicide every 7-10 days and remove infected leaves.",
+
+    "Potato___Late_blight":
+    "Apply Chlorothalonil fungicide and avoid excessive moisture.",
+
+    "Tomato___Bacterial_spot":
+    "Use copper-based bactericides and remove infected leaves.",
+
+    "Tomato___Early_blight":
+    "Apply fungicide and improve air circulation around plants.",
+
+    "Tomato___Late_blight":
+    "Avoid overhead watering and use preventive fungicides.",
+
+    "Apple___Apple_scab":
+    "Use sulfur-based fungicides and remove fallen leaves.",
+
+    "Apple___Black_rot":
+    "Prune infected branches and apply fungicides.",
+
+    "Corn_(maize)___Common_rust_":
+    "Use resistant hybrids and recommended fungicides.",
+
+    "Potato___healthy":
+    "No disease detected. Continue regular crop care.",
+
+    "Tomato___healthy":
+    "Healthy plant. Maintain proper irrigation and nutrition.",
+
+    "Apple___healthy":
+    "Healthy plant. Continue regular monitoring."
+}
 
 # Fertilizer Recommendation Dictionary
 fertilizer_dic = {
@@ -217,6 +278,59 @@ def predict():
 
         return jsonify({
             'error': str(e)
+        })
+    
+
+@app.route('/detect-disease', methods=['POST'])
+def detect_disease():
+
+    try:
+
+        file = request.files['image']
+
+        os.makedirs("uploads", exist_ok=True)
+
+        filepath = os.path.join("uploads", file.filename)
+
+        file.save(filepath)
+
+        # Load image
+        img = image.load_img(
+            filepath,
+            target_size=(128, 128)
+        )
+
+        img_array = image.img_to_array(img)
+
+        img_array = np.expand_dims(img_array, axis=0)
+
+        img_array = img_array / 255.0
+
+        # Prediction
+        prediction = disease_model.predict(img_array)
+
+        predicted_class = class_names[np.argmax(prediction)]
+
+        confidence = float(np.max(prediction)) * 100
+
+        solution = disease_solutions.get(
+            predicted_class,w
+            "Consult an agriculture expert."
+        )
+
+        return jsonify({
+
+            "disease": predicted_class,
+
+            "confidence": round(confidence, 2),
+
+            "solution": solution
+        })
+
+    except Exception as e:
+
+        return jsonify({
+            "error": str(e)
         })
 
 @app.route('/chat', methods=['POST'])

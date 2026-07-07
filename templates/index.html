@@ -108,6 +108,35 @@
 
         </div>
 
+       
+<!-- DISEASE DETECTION -->
+
+<div class="disease-box">
+
+    <h2>🌿 Plant Disease Detection</h2>
+
+    <input
+        type="file"
+        id="leafImage"
+        accept="image/*"
+    >
+
+    <button
+        type="button"
+        class="predict-btn"
+        onclick="detectDisease()"
+    >
+        Detect Disease
+    </button>
+
+    <div id="imagePreview"></div>
+
+    <div id="diseaseResult"></div>
+
+</div>
+
+
+
         <!-- RIGHT PANEL -->
 
         <div class="right-panel">
@@ -354,6 +383,81 @@ function sendMessage(){
         document.getElementById('chatInput').value = "";
     })
 }
+
+function detectDisease(){
+
+    const file =
+        document.getElementById("leafImage").files[0];
+
+    if(!file){
+
+        alert("Please upload image");
+
+        return;
+    }
+
+    const preview =
+        document.getElementById("imagePreview");
+
+    preview.innerHTML =
+        `<img src="${URL.createObjectURL(file)}">`;
+
+    const formData = new FormData();
+
+    formData.append("image", file);
+
+    fetch("/detect-disease", {
+
+        method: "POST",
+
+        body: formData
+
+    })
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        if(data.error){
+
+            document.getElementById(
+                "diseaseResult"
+            ).innerHTML =
+            "Error: " + data.error;
+
+            return;
+        }
+
+       document.getElementById(
+    "diseaseResult"
+).innerHTML =
+
+`
+🌿 Disease:
+${data.disease}
+
+<br><br>
+
+🎯 Confidence:
+${data.confidence}%
+
+<br><br>
+
+💊 Solution:
+${data.solution}
+`;
+    })
+
+    .catch(error => {
+
+        document.getElementById(
+            "diseaseResult"
+        ).innerHTML =
+        "Error detecting disease";
+
+    });
+}
+
 </script>
 
  

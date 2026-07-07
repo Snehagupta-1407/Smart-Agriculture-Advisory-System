@@ -1,4 +1,4 @@
-```css
+
 /* RESET */
 
 *{
@@ -365,3 +365,54 @@ button:hover{
     }
 }
 
+
+/* DISEASE BOX */
+
+.disease-box{
+
+    margin-top:40px;
+
+    background:rgba(255,255,255,0.18);
+
+    backdrop-filter:blur(15px);
+
+    border-radius:25px;
+
+    padding:25px;
+
+    box-shadow:0 8px 32px rgba(0,0,0,0.2);
+
+    border:1px solid rgba(255,255,255,0.2);
+}
+
+.disease-box h2{
+
+    color:white;
+
+    margin-bottom:20px;
+}
+
+#leafImage{
+
+    margin-bottom:20px;
+}
+
+#imagePreview img{
+
+    width:100%;
+
+    border-radius:15px;
+
+    margin-top:20px;
+}
+
+#diseaseResult{
+
+    margin-top:20px;
+
+    font-size:22px;
+
+    font-weight:600;
+
+    color:white;
+}
