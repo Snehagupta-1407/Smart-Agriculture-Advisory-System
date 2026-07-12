@@ -314,7 +314,7 @@ def detect_disease():
         confidence = float(np.max(prediction)) * 100
 
         solution = disease_solutions.get(
-            predicted_class,w
+            predicted_class,
             "Consult an agriculture expert."
         )
 
